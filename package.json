@@ -1,0 +1,27 @@
+{
+	"name": "@phoebecodes/uwubot",
+	"private": true,
+	"type": "module",
+	"dependencies": {
+		"@csstools/convert-colors": "^2.0.0",
+		"aws-sdk": "^2.909.0",
+		"consolidate": "^0.16.0",
+		"cookie-parser": "^1.4.5",
+		"express": "^4.17.1",
+		"got": "^11.8.2",
+		"handlebars": "^4.7.7",
+		"nanoid": "^3.1.23",
+		"vanilla-colorful": "^0.5.3",
+		"ws": "^7.5.0"
+	},
+	"scripts": {
+		"start": "node source/index.js",
+		"new-config": "node -r dotenv/config bin/new-config.js",
+		"update-config": "node -r dotenv/config bin/update-config.js"
+	},
+	"devDependencies": {
+		"dotenv": "^9.0.2",
+		"inquirer": "^8.1.0",
+		"prettier": "^2.2.1"
+	}
+}

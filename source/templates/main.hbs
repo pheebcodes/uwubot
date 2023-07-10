@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf8">
+        <title>uwubot</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
+
+            :root {
+                --bg: #e7e7e7;
+                --main-bg: #fafafa;
+            }
+            body {
+                font-family: 'Open Sans';
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin: 0;
+                padding: 0;
+                min-height: 100vh;
+                background: var(--bg);
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+                box-sizing: border-box;
+            }
+            button {
+                width: 100%;
+                margin-top: 1rem;
+                margin-bottom: 0;
+                padding: 0.25rem;
+            }
+            main {
+                max-width: 400px;
+                background: var(--main-bg);
+                padding: 2rem;
+            }
+            main section {
+                display: flex;
+                flex-direction: column;
+                margin-bottom: 1rem;
+            }
+            main section h1 {
+                margin: 0;
+                margin-bottom: 1rem;
+                line-height: 1;
+            }
+            main section hex-input::part(input) {
+                box-sizing: border-box;
+                width: 100%;
+                margin-top: 1rem;
+                margin-bottom: 0;
+                padding: 0.25rem;
+                border: 1px solid var(--bg);
+                border-radius: 2px;
+            }
+            main section ul {
+                list-style-type: none;
+                padding-inline-start: 0;
+                margin-bottom: 0;
+                margin-block-start: 0;
+                margin-block-end: 0;
+            }
+            main section li + li {
+                margin-top: 0.5rem;
+            }
+            main section li input {
+                margin-right: 1rem;
+            }
+            main section + section {
+                border-top: 2px solid var(--bg);
+                padding-top: calc(1rem - 2px);
+                margin-bottom: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <section>
+                <h1>Name Color</h1>
+                <form id="name-color-form">
+                    <hex-color-picker id="color-picker" color={{color}}></hex-color-picker>
+                    <hex-input id="color-picker-input" color={{color}}></hex-input>
+                    <button type="submit">Save</button>
+                </form>
+            </section>
+            <section>
+                <h1>Opt-in Channels</h1>
+                <ul id="channel-toggle">
+                    {{#each channels}}
+                    <li data-channel-id="{{this.id}}">
+                        <label><input type="checkbox" {{#if this.joined}} checked {{/if}}> #{{this.name}}</label>
+                    </li>
+                    {{/each}}
+                </ul>
+            </section>
+        </main>
+        <script type="module" src="https://cdn.skypack.dev/vanilla-colorful"></script>
+        <script type="module" src="https://cdn.skypack.dev/vanilla-colorful/hex-input.js"></script>
+        <script type="module">
+            import { hex2contrast } from 'https://cdn.skypack.dev/@csstools/convert-colors';
+
+            const $colorPicker = document.getElementById('color-picker');
+            const $colorPickerInput = document.getElementById('color-picker-input');
+            const $nameColorForm = document.getElementById('name-color-form');
+            const $colorSubmitButton = document.querySelector('#name-color-form button');
+
+            let color = "{{color}}";
+            $colorPicker.addEventListener('color-changed', (e) => {
+                const nextColor = event.detail.value;
+                if (nextColor === color) {
+                    return;
+                }
+                $colorPickerInput.color = nextColor;
+                color = nextColor;
+
+                $colorSubmitButton.disabled = hex2contrast(color, "{{BG_COLOR}}") < {{REQUIRED_CONTRAST_RATIO}};
+            });
+            $colorPickerInput.addEventListener('color-changed', (e) => {
+                const nextColor = event.detail.value;
+                if (nextColor === color) {
+                    return;
+                }
+                $colorPicker.color = nextColor;
+            });
+
+            // Name color form submit
+            $nameColorForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                fetch("/api/color", {
+                    method: "PATCH",
+                    body: color,
+                    credentials: "include",
+                });
+            });
+
+            const $channelToggleList = document.getElementById('channel-toggle');
+            $channelToggleList.addEventListener('change', (e) => {
+                const $channelListItem = e.target.closest('li');
+                const channelId = $channelListItem.dataset.channelId;
+                const next = e.target.checked;
+
+                fetch(`/api/channels/${channelId}`, {
+                    method: next === true ? "POST" : "DELETE",
+                    credentials: "include",
+                });
+            });
+        </script>
+    </body>
+</html>
